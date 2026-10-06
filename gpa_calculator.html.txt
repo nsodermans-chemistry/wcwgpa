@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Will C. Wood High School - Wildcats GPA Calculator</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Lustria & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Lustria&display=swap" rel="stylesheet">
+  
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: #f0f4fc;
+    }
+
+    h1, h2, h3, .brand-font {
+      font-family: 'Lustria', serif;
+    }
+
+    .sparkle-container {
+      position: relative;
+      display: inline-block;
+    }
+
+    #sparkleCanvas {
+      position: absolute;
+      top: -50px;
+      left: -60px;
+      width: calc(100% + 120px);
+      height: calc(100% + 100px);
+      pointer-events: none;
+      z-index: 10;
+    }
+
+    .gpa-score {
+      transition: color 0.5s ease, text-shadow 0.5s ease;
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.3s ease-in-out forwards;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="text-slate-800 min-h-screen pb-16">
+
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-blue-900 via-blue-800 to-indigo-900 text-white py-6 shadow-lg border-b-4 border-amber-400">
+    <div class="max-w-4xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-center gap-4 text-center sm:text-left">
+      <!-- Will C. Wood Wildcats Logo -->
+      <img 
+        src="data:image/png;base64,iVBORw0KGgoAAAANSU5AG3ErkJggg==" 
+        alt="Will C. Wood Wildcats Logo" 
+        class="w-24 h-24 object-contain drop-shadow-md"
+        id="wildcatLogo"
+      />
+      <div>
+        <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white">
+          Will C. Wood High School
+        </h1>
+        <div class="brand-font text-amber-400 text-lg sm:text-xl font-bold tracking-wider uppercase mt-1">
+          WILDCATS GPA CALCULATOR
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-4xl mx-auto px-4 mt-8 space-y-6">
+
+    <!-- Step 1: Course Selection Card -->
+    <section class="bg-white rounded-2xl p-6 shadow-sm border border-blue-100">
+      <h2 class="text-xl font-bold text-blue-950 mb-6 flex items-center gap-2">
+        <span class="flex items-center justify-center w-7 h-7 rounded-full bg-amber-400 text-blue-950 text-sm font-bold">1</span>
+        Select Course Counts
+      </h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        <!-- Regular Dropdown -->
+        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+          <label for="regularCount" class="block text-sm font-semibold text-slate-700 mb-3">Number of regular classes</label>
+          <select id="regularCount" onchange="generateCourseRows()" class="w-full bg-white border border-slate-300 rounded-lg px-3 py-2 text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600">
+          </select>
+        </div>
+
+        <!-- Solano Dropdown -->
+        <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-200/60">
+          <label for="solanoCount" class="block text-sm font-semibold text-blue-950 mb-3">Number of Solano classes</label>
+          <select id="solanoCount" onchange="generateCourseRows()" class="w-full bg-white border border-blue-300 rounded-lg px-3 py-2 text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-blue-600">
+          </select>
+        </div>
+
+        <!-- Honors Dropdown -->
+        <div class="bg-amber-50/50 p-4 rounded-xl border border-amber-200/60">
+          <label for="honorsCount" class="block text-sm font-semibold text-amber-900 mb-3">Number of honors classes</label>
+          <select id="honorsCount" onchange="generateCourseRows()" class="w-full bg-white border border-amber-300 rounded-lg px-3 py-2 text-slate-800 font-medium focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+          </select>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 2: Course Grade Inputs Container -->
+    <section id="courseSectionsWrapper" class="space-y-6">
+      <!-- Regular Classes Section -->
+      <div id="regularSection" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-200 border-l-4 border-l-slate-400">
+        <div class="flex items-center justify-between mb-4 border-b pb-3">
+          <h3 class="text-lg font-bold text-slate-800">Regular Classes</h3>
+          <span id="regularCountBadge" class="text-xs font-semibold text-slate-500">0 Classes</span>
+        </div>
+        <div id="regularRows" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
+      </div>
+
+      <!-- Solano Classes Section -->
+      <div id="solanoSection" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-200 border-l-4 border-l-blue-600">
+        <div class="flex items-center justify-between mb-4 border-b pb-3">
+          <h3 class="text-lg font-bold text-blue-950">Solano Community College Classes</h3>
+          <span id="solanoCountBadge" class="text-xs font-semibold text-blue-700">0 Classes</span>
+        </div>
+        <div id="solanoRows" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
+      </div>
+
+      <!-- Honors Classes Section -->
+      <div id="honorsSection" class="hidden bg-white rounded-2xl p-6 shadow-sm border border-slate-200 border-l-4 border-l-amber-500">
+        <div class="flex items-center justify-between mb-4 border-b pb-3">
+          <h3 class="text-lg font-bold text-amber-900">Honors Classes</h3>
+          <span id="honorsCountBadge" class="text-xs font-semibold text-amber-700">0 Classes</span>
+        </div>
+        <div id="honorsRows" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3"></div>
+      </div>
+    </section>
+
+    <!-- Empty State Prompt -->
+    <div id="emptyPrompt" class="bg-white border border-dashed border-blue-200 rounded-2xl p-8 text-center text-slate-500">
+      <svg class="w-10 h-10 mx-auto mb-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+      </svg>
+      <p class="font-medium">Select one or more classes above to enter grades.</p>
+    </div>
+
+    <!-- Calculate Button -->
+    <div id="actionArea" class="hidden pt-2">
+      <button onclick="calculateGPA()" class="w-full bg-blue-900 hover:bg-blue-800 text-amber-400 brand-font text-xl font-bold py-4 px-6 rounded-xl shadow-lg hover:shadow-blue-200 transition-all active:scale-[0.99] flex items-center justify-center gap-2 cursor-pointer border-2 border-amber-400">
+        <span>Calculate</span>
+      </button>
+    </div>
+
+    <!-- Step 3: Calculation Results -->
+    <section id="resultsSection" class="hidden bg-white rounded-2xl p-8 shadow-md border border-blue-100 text-center relative overflow-hidden animate-fade-in">
+      <h2 class="brand-font text-sm font-bold uppercase tracking-wider text-slate-400 mb-2">Overall GPA</h2>
+
+      <div class="sparkle-container my-4">
+        <canvas id="sparkleCanvas"></canvas>
+        <div id="gpaValue" class="gpa-score text-6xl md:text-7xl font-black tracking-tight select-none brand-font">
+          0.00
+        </div>
+      </div>
+
+      <!-- Detailed Breakdown Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 border-t border-slate-100 pt-6 text-left">
+        <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+          <div class="text-xs text-slate-500 font-medium">Total Units</div>
+          <div id="breakdownUnits" class="text-2xl font-bold text-blue-950 mt-1">0</div>
+        </div>
+        <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+          <div class="text-xs text-slate-500 font-medium">Total Points</div>
+          <div id="breakdownPoints" class="text-2xl font-bold text-blue-950 mt-1">0</div>
+        </div>
+        <div class="bg-blue-50/50 p-4 rounded-xl border border-blue-100">
+          <div class="text-xs text-slate-500 font-medium">Total Courses</div>
+          <div id="breakdownCourses" class="text-2xl font-bold text-blue-950 mt-1">0</div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // Point values for grade scales
+    const REGULAR_POINTS = { "A": 4, "B": 3, "C": 2, "D": 1, "F": 0 };
+    const HONORS_POINTS  = { "A": 5, "B": 4, "C": 3, "D": 2, "F": 0 };
+    const SOLANO_POINTS  = { "A": 5, "B": 4, "C": 3, "D": 2, "F": 0 };
+
+    // Unit Weights
+    const REGULAR_UNITS = 5;
+    const HONORS_UNITS  = 5;
+    const SOLANO_UNITS  = 10;
+
+    let animationFrameId = null;
+    let sparkles = [];
+
+    // Inject SVG logo image URL
+    window.addEventListener("DOMContentLoaded", function() {
+      const svgLogo = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path fill="%23F59E0B" stroke="%231E3A8A" stroke-width="4" d="M20,20 Q50,5 80,20 Q95,50 80,80 Q50,95 20,80 Q5,50 20,20 Z"/><text x="50" y="62" font-family="sans-serif" font-weight="900" font-size="38" fill="%231E3A8A" text-anchor="middle">W</text></svg>`;
+      document.getElementById("wildcatLogo").src = svgLogo;
+
+      populateDropdownOptions("regularCount");
+      populateDropdownOptions("solanoCount");
+      populateDropdownOptions("honorsCount");
+      initCanvas();
+    });
+
+    function populateDropdownOptions(id) {
+      const select = document.getElementById(id);
+      for (let i = 0; i <= 10; i++) {
+        const opt = document.createElement("option");
+        opt.value = i;
+        opt.textContent = i === 0 ? "0 Classes" : (i === 1 ? "1 Class" : `${i} Classes`);
+        select.appendChild(opt);
+      }
+    }
+
+    function generateCourseRows() {
+      const regNum = parseInt(document.getElementById("regularCount").value) || 0;
+      const solNum = parseInt(document.getElementById("solanoCount").value) || 0;
+      const honNum = parseInt(document.getElementById("honorsCount").value) || 0;
+
+      toggleSection("regularSection", "regularRows", regNum, "Regular", "regularCountBadge");
+      toggleSection("solanoSection", "solanoRows", solNum, "Solano CC", "solanoCountBadge");
+      toggleSection("honorsSection", "honorsRows", honNum, "Honors", "honorsCountBadge");
+
+      const totalCount = regNum + honNum + solNum;
+      document.getElementById("emptyPrompt").style.display = totalCount === 0 ? "block" : "none";
+      document.getElementById("actionArea").style.display = totalCount > 0 ? "block" : "none";
+      
+      document.getElementById("resultsSection").classList.add("hidden");
+      stopSparkles();
+    }
+
+    function toggleSection(sectionId, containerId, count, labelPrefix, badgeId) {
+      const section = document.getElementById(sectionId);
+      const container = document.getElementById(containerId);
+      const badge = document.getElementById(badgeId);
+
+      if (count === 0) {
+        section.classList.add("hidden");
+        container.innerHTML = "";
+        return;
+      }
+
+      section.classList.remove("hidden");
+      badge.textContent = `${count} ${count === 1 ? 'Class' : 'Classes'}`;
+
+      const existingGrades = Array.from(container.querySelectorAll('.course-grade')).map(select => select.value);
+      container.innerHTML = "";
+
+      for (let i = 1; i <= count; i++) {
+        const row = document.createElement("div");
+        row.className = "flex items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200 animate-fade-in";
+        
+        const defaultGrade = existingGrades[i-1] || "A";
+
+        row.innerHTML = `
+          <span class="text-sm font-semibold text-slate-700 whitespace-nowrap">${labelPrefix} #${i}</span>
+          <select class="course-grade bg-white border border-slate-300 rounded-lg px-3 py-1.5 text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-600">
+            <option value="A" ${defaultGrade === "A" ? "selected" : ""}>A</option>
+            <option value="B" ${defaultGrade === "B" ? "selected" : ""}>B</option>
+            <option value="C" ${defaultGrade === "C" ? "selected" : ""}>C</option>
+            <option value="D" ${defaultGrade === "D" ? "selected" : ""}>D</option>
+            <option value="F" ${defaultGrade === "F" ? "selected" : ""}>F</option>
+          </select>
+        `;
+        container.appendChild(row);
+      }
+    }
+
+    function calculateGPA() {
+      let totalUnits = 0;
+      let totalWeightedPoints = 0;
+
+      // Regular Classes
+      const regGrades = document.querySelectorAll("#regularRows .course-grade");
+      regGrades.forEach(select => {
+        const pts = REGULAR_POINTS[select.value];
+        totalWeightedPoints += pts * REGULAR_UNITS;
+        totalUnits += REGULAR_UNITS;
+      });
+
+      // Solano Classes
+      const solGrades = document.querySelectorAll("#solanoRows .course-grade");
+      solGrades.forEach(select => {
+        const pts = SOLANO_POINTS[select.value];
+        totalWeightedPoints += pts * SOLANO_UNITS;
+        totalUnits += SOLANO_UNITS;
+      });
+
+      // Honors Classes
+      const honGrades = document.querySelectorAll("#honorsRows .course-grade");
+      honGrades.forEach(select => {
+        const pts = HONORS_POINTS[select.value];
+        totalWeightedPoints += pts * HONORS_UNITS;
+        totalUnits += HONORS_UNITS;
+      });
+
+      if (totalUnits === 0) return;
+
+      const gpa = totalWeightedPoints / totalUnits;
+      displayResults(gpa, totalUnits, totalWeightedPoints, regGrades.length, solGrades.length, honGrades.length);
+    }
+
+    function displayResults(gpa, units, points, regCount, solCount, honCount) {
+      const resultsSection = document.getElementById("resultsSection");
+      const gpaValueEl = document.getElementById("gpaValue");
+
+      resultsSection.classList.remove("hidden");
+
+      const formattedGpa = gpa.toFixed(2);
+      gpaValueEl.textContent = formattedGpa;
+
+      document.getElementById("breakdownUnits").textContent = units;
+      document.getElementById("breakdownPoints").textContent = points;
+      document.getElementById("breakdownCourses").textContent = regCount + solCount + honCount;
+
+      const colorStyle = getGPAColor(gpa);
+      gpaValueEl.style.color = colorStyle.color;
+      gpaValueEl.style.textShadow = colorStyle.shadow;
+
+      if (gpa > 4.0) {
+        startSparkles(gpa);
+      } else {
+        stopSparkles();
+      }
+
+      resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function getGPAColor(gpa) {
+      if (gpa > 4.0) {
+        return {
+          color: "#059669", 
+          shadow: "0 0 20px rgba(16, 185, 129, 0.4)"
+        };
+      }
+
+      const ratio = Math.max(0, Math.min(1, gpa / 4.0));
+      let r, g, b;
+
+      if (ratio < 0.33) {
+        const factor = ratio / 0.33;
+        r = Math.round(225 + (234 - 225) * factor);
+        g = Math.round(29 + (88 - 29) * factor);
+        b = Math.round(72 + (12 - 72) * factor);
+      } else if (ratio < 0.66) {
+        const factor = (ratio - 0.33) / 0.33;
+        r = Math.round(234 + (180 - 234) * factor);
+        g = Math.round(88 + (160 - 88) * factor);
+        b = Math.round(12 + (20 - 12) * factor);
+      } else {
+        const factor = (ratio - 0.66) / 0.34;
+        r = Math.round(180 + (16 - 180) * factor);
+        g = Math.round(160 + (185 - 160) * factor);
+        b = Math.round(20 + (129 - 20) * factor);
+      }
+
+      return {
+        color: `rgb(${r}, ${g}, ${b})`,
+        shadow: `0 2px 10px rgba(${r}, ${g}, ${b}, 0.2)`
+      };
+    }
+
+    function initCanvas() {
+      const canvas = document.getElementById("sparkleCanvas");
+      const container = canvas.parentElement;
+      canvas.width = container.offsetWidth + 120;
+      canvas.height = container.offsetHeight + 100;
+    }
+
+    window.onresize = function() {
+      initCanvas();
+    };
+
+    function startSparkles(gpa) {
+      stopSparkles();
+      const canvas = document.getElementById("sparkleCanvas");
+      const ctx = canvas.getContext("2d");
+      
+      const excess = Math.min(1.0, gpa - 4.0);
+      const targetSparkleCount = Math.floor(25 + excess * 45);
+
+      sparkles = [];
+      for (let i = 0; i < targetSparkleCount; i++) {
+        sparkles.push(createSparkle(canvas));
+      }
+
+      function animate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        sparkles.forEach((s, index) => {
+          s.x += s.vx;
+          s.y += s.vy;
+          s.alpha += s.dAlpha;
+
+          if (s.alpha >= 1 || s.alpha <= 0) {
+            s.dAlpha = -s.dAlpha;
+          }
+
+          if (s.y < 0 || s.x < 0 || s.x > canvas.width || s.y > canvas.height) {
+            sparkles[index] = createSparkle(canvas);
+          }
+
+          ctx.save();
+          ctx.translate(s.x, s.y);
+          ctx.globalAlpha = Math.max(0, s.alpha);
+          ctx.fillStyle = s.color;
+          
+          ctx.beginPath();
+          for (let p = 0; p < 4; p++) {
+            ctx.rotate(Math.PI / 2);
+            ctx.lineTo(0, s.size);
+            ctx.lineTo(s.size * 0.3, s.size * 0.3);
+          }
+          ctx.fill();
+          ctx.restore();
+        });
+
+        animationFrameId = requestAnimationFrame(animate);
+      }
+
+      animate();
+    }
+
+    function stopSparkles() {
+      if (animationFrameId) {
+        cancelAnimationFrame(animationFrameId);
+        animationFrameId = null;
+      }
+      const canvas = document.getElementById("sparkleCanvas");
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function createSparkle(canvas) {
+      const colors = ["#FBBF24", "#F59E0B", "#FCD34D", "#34D399", "#10B981"];
+      return {
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        vx: (Math.random() - 0.5) * 0.6,
+        vy: -Math.random() * 0.8 - 0.2,
+        size: Math.random() * 6 + 3,
+        alpha: Math.random(),
+        dAlpha: (Math.random() * 0.02 + 0.01) * (Math.random() < 0.5 ? 1 : -1),
+        color: colors[Math.floor(Math.random() * colors.length)]
+      };
+    }
+  </script>
+</body>
+</html>
